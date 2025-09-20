@@ -12,7 +12,22 @@ var (
 	number_of_ants = -1
 	first          = false
 	the_rooms      = make(map[string][]string)
+	RestOfAnt      = 0
+	tunnels        = [][]string{}
+	Enter_Ant      = []string{}
 )
+
+func Ant_Path(start, end string) {
+	visit := make(map[string]bool)
+	i := 0
+	path:=[]string{start}
+	for room, neighbor := range the_rooms {
+		if room == start {
+			path=append(path, neighbor...)
+		}
+		i++
+	}
+}
 
 func Check_Char(str string, char rune) int {
 	for i, c := range str {
@@ -23,11 +38,19 @@ func Check_Char(str string, char rune) int {
 	return -1
 }
 
-func Relation_Room(graph map[string][]string, Firstroom, neighbor string) {
-	for room := range graph {
-		if room==Firstroom{
-			graph[Firstroom]==append()
+func Relation_Room(Firstroom, neighbors string) {
+	RoomExist := false
+	for room, neighbor := range the_rooms {
+		if room == Firstroom {
+			RoomExist = true
+			neighbor = append(neighbor, neighbors)
+			the_rooms[Firstroom] = neighbor
 		}
+	}
+	if !RoomExist {
+		var neighbor []string
+		neighbor = append(neighbor, neighbors)
+		the_rooms[Firstroom] = neighbor
 	}
 }
 
@@ -68,11 +91,7 @@ func main() {
 			} else if first {
 				i := Check_Char(text, '-')
 				if i != -1 {
-					fmt.Println("OK")
-					Firstroom := string(text[:i])
-					neighbor := string(text[i+1:])
-
-					the_rooms[string(text[:i])] = string(text[i+1:])
+					Relation_Room(string(text[:i]), string(text[i+1:]))
 				}
 				fmt.Println(text)
 			}

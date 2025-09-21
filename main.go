@@ -12,21 +12,31 @@ var (
 	number_of_ants = -1
 	first          = false
 	the_rooms      = make(map[string][]string)
+	visit          = make(map[string]bool)
 	RestOfAnt      = 0
 	tunnels        = [][]string{}
 	Enter_Ant      = []string{}
 )
 
 func Ant_Path(start, end string) {
-	visit := make(map[string]bool)
-	i := 0
-	path:=[]string{start}
-	for room, neighbor := range the_rooms {
-		if room == start {
-			path=append(path, neighbor...)
+	path := []string{}
+	Find_Path(start, end, path)
+}
+
+func Find_Path(current, end string, path []string) {
+	path = append(path, current)
+	visit[current] = true
+	
+		tunnels = append(tunnels, path)
+	
+		for _, room := range the_rooms[current] {
+			if !visit[room] {
+				Find_Path(room, end, path)
+			}
 		}
-		i++
-	}
+		
+	
+	
 }
 
 func Check_Char(str string, char rune) int {
@@ -98,6 +108,11 @@ func main() {
 		}
 		for key, strr := range the_rooms {
 			fmt.Printf("%s-%s ", key, strr)
+		}
+		Ant_Path("1", "0")
+		fmt.Println()
+		for _, path := range tunnels {
+			fmt.Print(path)
 		}
 		if err := scanner.Err(); err != nil {
 			fmt.Println("Error reading file:", err)

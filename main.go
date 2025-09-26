@@ -26,24 +26,20 @@ func Ant_Path(start, end string) {
 func Find_Path(current, end string, path []string) {
 	path = append(path, current)
 	visit[current] = true
-
-	tunnels = append(tunnels, path)
-
+	if end == current {
+		pathCopy := make([]string, len(path))
+		copy(pathCopy, path)
+		tunnels = append(tunnels, pathCopy)
+		visit[current] = false
+		return
+	}
 	for _, room := range the_rooms[current] {
 		if !visit[room] {
 			Find_Path(room, end, path)
 		}
-		for room2, room3 := range the_rooms {
-			for _, inside := range room3 {
-				if inside == room {
-					if !visit[room2] {
-						Find_Path(room2, end, path)
-					}
-				}
-			}
-		}
-		
 	}
+	visit[current] = false
+	fmt.Printf("Backtracking from %s, Path before backtrack: %v\n", current, path)
 }
 
 func Check_Char(str string, char rune) int {
@@ -53,6 +49,15 @@ func Check_Char(str string, char rune) int {
 		}
 	}
 	return -1
+}
+
+func Check_slice(slc []string, str string) bool {
+	for _, check := range slc {
+		if str == check {
+			return true
+		}
+	}
+	return false
 }
 
 func Relation_Room(Firstroom, neighbors string) {
@@ -68,6 +73,13 @@ func Relation_Room(Firstroom, neighbors string) {
 		var neighbor []string
 		neighbor = append(neighbor, neighbors)
 		the_rooms[Firstroom] = neighbor
+	}
+	for room, neighbor := range the_rooms {
+		for _, inside := range neighbor {
+			if !Check_slice(the_rooms[inside], room) {
+				the_rooms[inside] = append(the_rooms[inside], room)
+			}
+		}
 	}
 }
 
@@ -105,7 +117,9 @@ func main() {
 			} else if text == "##end" || text == "##start" {
 				fmt.Println(text)
 				first = true
+
 			} else if first {
+
 				i := Check_Char(text, '-')
 				if i != -1 {
 					Relation_Room(string(text[:i]), string(text[i+1:]))
@@ -116,11 +130,14 @@ func main() {
 		for key, strr := range the_rooms {
 			fmt.Printf("%s-%s ", key, strr)
 		}
-		Ant_Path("1", "0")
+		Ant_Path("start", "end")
 		fmt.Println()
-		for _, path := range tunnels {
-			fmt.Print(path)
+		for _, paths := range tunnels {
+			fmt.Print(paths)
+			fmt.Println()
 		}
+
+		fmt.Println(len(tunnels))
 		if err := scanner.Err(); err != nil {
 			fmt.Println("Error reading file:", err)
 			return

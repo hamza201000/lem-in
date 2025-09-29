@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -16,6 +17,8 @@ var (
 	RestOfAnt      = 0
 	tunnels        = [][]string{}
 	Enter_Ant      = []string{}
+	sort_path      = []int{}
+	len_path       = make(map[int]int)
 )
 
 func Ant_Path(start, end string) {
@@ -23,20 +26,31 @@ func Ant_Path(start, end string) {
 	Find_Path(start, end, path)
 }
 
+func Find_Short_Path() {
+	for i, path := range tunnels {
+		lnpath := len(path)
+		len_path[i] = lnpath
+		sort_path = append(sort_path, lnpath)
+	}
+}
+
 func Find_Path(current, end string, path []string) {
 	path = append(path, current)
 	visit[current] = true
-	
-		tunnels = append(tunnels, path)
-	
-		for _, room := range the_rooms[current] {
-			if !visit[room] {
-				Find_Path(room, end, path)
-			}
+	if end == current {
+		pathCopy := make([]string, len(path))
+		copy(pathCopy, path)
+		tunnels = append(tunnels, pathCopy)
+		visit[current] = false
+		return
+	}
+	for _, room := range the_rooms[current] {
+		if !visit[room] {
+			Find_Path(room, end, path)
 		}
-		
-	
-	
+	}
+	visit[current] = false
+	// fmt.Printf("Backtracking from %s, Path before backtrack: %v\n", current, path)
 }
 
 func Check_Char(str string, char rune) int {
@@ -46,6 +60,15 @@ func Check_Char(str string, char rune) int {
 		}
 	}
 	return -1
+}
+
+func Check_slice(slc []string, str string) bool {
+	for _, check := range slc {
+		if str == check {
+			return true
+		}
+	}
+	return false
 }
 
 func Relation_Room(Firstroom, neighbors string) {
@@ -61,6 +84,13 @@ func Relation_Room(Firstroom, neighbors string) {
 		var neighbor []string
 		neighbor = append(neighbor, neighbors)
 		the_rooms[Firstroom] = neighbor
+	}
+	for room, neighbor := range the_rooms {
+		for _, inside := range neighbor {
+			if !Check_slice(the_rooms[inside], room) {
+				the_rooms[inside] = append(the_rooms[inside], room)
+			}
+		}
 	}
 }
 
@@ -98,7 +128,9 @@ func main() {
 			} else if text == "##end" || text == "##start" {
 				fmt.Println(text)
 				first = true
+
 			} else if first {
+
 				i := Check_Char(text, '-')
 				if i != -1 {
 					Relation_Room(string(text[:i]), string(text[i+1:]))
@@ -111,8 +143,16 @@ func main() {
 		}
 		Ant_Path("1", "0")
 		fmt.Println()
-		for _, path := range tunnels {
-			fmt.Print(path)
+		for _, paths := range tunnels {
+			fmt.Print(paths)
+			fmt.Println()
+		}
+
+		fmt.Println(len(tunnels))
+		Find_Short_Path()
+		sort.Ints(sort_path)
+		for i, len := range sort_path {
+			fmt.Println(i, len)
 		}
 		if err := scanner.Err(); err != nil {
 			fmt.Println("Error reading file:", err)

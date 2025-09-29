@@ -15,13 +15,37 @@ var (
 	visit          = make(map[string]bool)
 	RestOfAnt      = 0
 	tunnels        = [][]string{}
-	Enter_Ant      = []string{}
+
+	// len_path = make(map[int]int)
 )
 
 func Ant_Path(start, end string) {
 	path := []string{}
 	Find_Path(start, end, path)
 }
+
+func Find_Short_Path() {
+	for i:=0;i<len(tunnels);i++{
+		for j:=0;j<len(tunnels);j++{
+			if len(tunnels[i])<len(tunnels[j]){
+				tunnels[i],tunnels[j]=tunnels[j],tunnels[i]
+			}
+		}
+	}
+}
+
+// func Enter_Ant(){
+
+// 	for _,path:=range tunnels{
+// 		for i:=0;i<len(path);i++{
+
+// 		}
+
+
+// 	}
+
+
+// }
 
 func Find_Path(current, end string, path []string) {
 	path = append(path, current)
@@ -30,6 +54,7 @@ func Find_Path(current, end string, path []string) {
 		pathCopy := make([]string, len(path))
 		copy(pathCopy, path)
 		tunnels = append(tunnels, pathCopy)
+		fmt.Println(tunnels)
 		visit[current] = false
 		return
 	}
@@ -39,7 +64,7 @@ func Find_Path(current, end string, path []string) {
 		}
 	}
 	visit[current] = false
-	fmt.Printf("Backtracking from %s, Path before backtrack: %v\n", current, path)
+	// fmt.Printf("Backtracking from %s, Path before backtrack: %v\n", current, path)
 }
 
 func Check_Char(str string, char rune) int {
@@ -127,10 +152,10 @@ func main() {
 				fmt.Println(text)
 			}
 		}
-		for key, strr := range the_rooms {
-			fmt.Printf("%s-%s ", key, strr)
-		}
-		Ant_Path("start", "end")
+		// for key, strr := range the_rooms {
+		// 	fmt.Printf("%s-%s ", key, strr)
+		// }
+		Ant_Path("1", "0")
 		fmt.Println()
 		for _, paths := range tunnels {
 			fmt.Print(paths)
@@ -138,6 +163,10 @@ func main() {
 		}
 
 		fmt.Println(len(tunnels))
+		Find_Short_Path()
+		for i, path := range tunnels {
+			fmt.Println(i, path)
+		}
 		if err := scanner.Err(); err != nil {
 			fmt.Println("Error reading file:", err)
 			return

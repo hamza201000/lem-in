@@ -10,7 +10,10 @@ import (
 
 var (
 	number_of_ants = -1
-	first          = false
+	start          = []string{}
+	end            = []string{}
+	Room_Start     = ""
+	Room_End       = ""
 	the_rooms      = make(map[string][]string)
 	visit          = make(map[string]bool)
 	RestOfAnt      = 0
@@ -25,10 +28,10 @@ func Ant_Path(start, end string) {
 }
 
 func Find_Short_Path() {
-	for i:=0;i<len(tunnels);i++{
-		for j:=0;j<len(tunnels);j++{
-			if len(tunnels[i])<len(tunnels[j]){
-				tunnels[i],tunnels[j]=tunnels[j],tunnels[i]
+	for i := 0; i < len(tunnels); i++ {
+		for j := 0; j < len(tunnels); j++ {
+			if len(tunnels[i]) < len(tunnels[j]) {
+				tunnels[i], tunnels[j] = tunnels[j], tunnels[i]
 			}
 		}
 	}
@@ -41,9 +44,7 @@ func Find_Short_Path() {
 
 // 		}
 
-
 // 	}
-
 
 // }
 
@@ -67,7 +68,7 @@ func Find_Path(current, end string, path []string) {
 	// fmt.Printf("Backtracking from %s, Path before backtrack: %v\n", current, path)
 }
 
-func Check_Char(str string, char rune) int {
+func Split_Char(str string, char rune) int {
 	for i, c := range str {
 		if char == c {
 			return i
@@ -86,25 +87,17 @@ func Check_slice(slc []string, str string) bool {
 }
 
 func Relation_Room(Firstroom, neighbors string) {
-	RoomExist := false
-	for room, neighbor := range the_rooms {
-		if room == Firstroom {
-			RoomExist = true
-			neighbor = append(neighbor, neighbors)
-			the_rooms[Firstroom] = neighbor
-		}
+	if the_rooms[(Firstroom)] == nil {
+		neighbr := []string{(neighbors)}
+		the_rooms[(Firstroom)] = neighbr
+	} else {
+		the_rooms[(Firstroom)] = append(the_rooms[(Firstroom)], (neighbors))
 	}
-	if !RoomExist {
-		var neighbor []string
-		neighbor = append(neighbor, neighbors)
-		the_rooms[Firstroom] = neighbor
-	}
-	for room, neighbor := range the_rooms {
-		for _, inside := range neighbor {
-			if !Check_slice(the_rooms[inside], room) {
-				the_rooms[inside] = append(the_rooms[inside], room)
-			}
-		}
+	if the_rooms[(neighbors)] == nil {
+		neighbr := []string{(Firstroom)}
+		the_rooms[(neighbors)] = neighbr
+	} else {
+		the_rooms[(neighbors)] = append(the_rooms[(neighbors)], (Firstroom))
 	}
 }
 
@@ -130,8 +123,10 @@ func main() {
 		}
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
+		first := false
 		for scanner.Scan() {
 			text := scanner.Text()
+			
 			if number_of_ants == -1 {
 				number_of_ants, err = strconv.Atoi(text)
 				if err != nil {
@@ -145,7 +140,7 @@ func main() {
 
 			} else if first {
 
-				i := Check_Char(text, '-')
+				i := Split_Char(text, '-')
 				if i != -1 {
 					Relation_Room(string(text[:i]), string(text[i+1:]))
 				}
@@ -155,6 +150,12 @@ func main() {
 		// for key, strr := range the_rooms {
 		// 	fmt.Printf("%s-%s ", key, strr)
 		// }
+
+		i := Split_Char((start[1]), ' ')
+		Room_Start = start[1][:i]
+		i = Split_Char((end[1]), ' ')
+		Room_End = end[1][:i]
+		fmt.Println(Room_Start, ",", Room_End)
 		Ant_Path("1", "0")
 		fmt.Println()
 		for _, paths := range tunnels {

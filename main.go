@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -15,27 +16,55 @@ var (
 	Room_Start = ""
 	Room_End   = ""
 	the_rooms  = make(map[string][]string)
-	visit      = make(map[string]bool)
 	RestOfAnt  = 0
-	tunnels    = [][]string{}
+	tunnels    = [][][]string{}
 
 	// len_path = make(map[int]int)
 )
 
-func Ant_Path(start, end string) {
-	path := []string{}
-	Find_Path(start, end, path)
+func Get_Best_Path(start, end string) {
+	for _, nehbior := range the_rooms[start] {
+		Best_Path := [][]string{}
+		Best_Path = append(Best_Path, Bfs(nehbior, end, start, map[string]bool{start: true, nehbior: true}))
+		tunnels = append(tunnels, Best_Path)
+	}
 }
 
-func Find_Short_Path() {
-	for i := 0; i < len(tunnels); i++ {
-		for j := 0; j < len(tunnels); j++ {
-			if len(tunnels[i]) < len(tunnels[j]) {
-				tunnels[i], tunnels[j] = tunnels[j], tunnels[i]
+func Get_All_Path(start, end string) {
+	for i, Group_Path := range tunnels {
+		visit := MarkVisist(Group_Path)
+		for _, nehbior := range the_rooms[start] {
+			if !visit[nehbior] {
+				Paths := Bfs(nehbior, end, start, visit)
+				if len(Paths) > 0 {
+					tunnels[i] = append(tunnels[i], Paths)
+				}
 			}
 		}
 	}
 }
+
+func MarkVisist(Group_Path [][]string) map[string]bool {
+	visit := map[string]bool{Room_Start: true}
+	for _, paths := range Group_Path {
+		for i, Room := range paths {
+			if i != len(paths)-1 {
+				visit[Room] = true
+			}
+		}
+	}
+	return visit
+}
+
+// func Find_Short_Path() {
+// 	for i := 0; i < len(tunnels); i++ {
+// 		for j := 0; j < len(tunnels); j++ {
+// 			if len(tunnels[i]) < len(tunnels[j]) {
+// 				tunnels[i], tunnels[j] = tunnels[j], tunnels[i]
+// 			}
+// 		}
+// 	}
+// }
 
 // func Enter_Ant(){
 
@@ -48,24 +77,41 @@ func Find_Short_Path() {
 
 // }
 
-func Find_Path(current, end string, path []string) {
-	path = append(path, current)
-	visit[current] = true
-	if end == current {
-		pathCopy := make([]string, len(path))
-		copy(pathCopy, path)
-		tunnels = append(tunnels, pathCopy)
+func Bfs(start, end, start1 string, visit map[string]bool) []string {
+	quene := []string{start}
+	parent := make(map[string]string)
 
-		visit[current] = false
-		return
-	}
-	for _, room := range the_rooms[current] {
-		if !visit[room] {
-			Find_Path(room, end, path)
+	for len(quene) > 0 {
+
+		current := quene[0]
+
+		quene = quene[1:]
+
+		for _, neighbor := range the_rooms[current] {
+			if !visit[neighbor] {
+				visit[neighbor] = true
+				parent[neighbor] = current
+				quene = append(quene, neighbor)
+			}
+			if neighbor == end {
+				return Complete_Path(parent, start, end)
+			}
 		}
 	}
-	visit[current] = false
-	// fmt.Printf("Backtracking from %s, Path before backtrack: %v\n", current, path)
+	return nil
+}
+
+func Complete_Path(parent map[string]string, start, end string) []string {
+	path := []string{}
+	curnt := end
+	for curnt != start {
+		path = append(path, curnt)
+		curnt = parent[curnt]
+	}
+	path = append(path, start)
+	path = append(path, Room_Start)
+	slices.Reverse(path)
+	return path
 }
 
 func Split_Char(str []byte, char byte) int {
@@ -126,7 +172,7 @@ func main() {
 					fmt.Println("Error: ", err)
 					return
 				}
-				fmt.Println(text)
+				// fmt.Println(text)
 			} else if text == "##start" {
 				start = append(start, text)
 				OnStart = true
@@ -150,12 +196,9 @@ func main() {
 		// Ant_Path("1", "0")
 		// fmt.Println()
 		i := 0
-		for _, ValueStart := range start {
-			fmt.Println(ValueStart)
-		}
-		fmt.Println("endendendendendendendendendendendendendendendendendendendendendend")
+		// fmt.Println("endendendendendendendendendendendendendendendendendendendendendend")
 		for _, ValueEnd := range end {
-			fmt.Println(ValueEnd)
+			// fmt.Println(ValueEnd)
 			ValBytes := []byte(ValueEnd)
 			i := bytes.IndexByte(ValBytes, '-')
 			if i != -1 {
@@ -166,18 +209,32 @@ func main() {
 		Room_Start = start[1][:i]
 		i = Split_Char([]byte(end[1]), ' ')
 		Room_End = end[1][:i]
-		fmt.Println(Room_Start, ",", Room_End)
+		// Room_Start = "4020"
 
-		Ant_Path(Room_Start, Room_End)
+		// Room_End = "19180"
+		// fmt.Println(Room_Start)
+		// fmt.Println(Room_End)
+		// fmt.Println(Room_Start, ",", Room_End)
 
-		fmt.Println("ok")
-		fmt.Println(len(start))
-		fmt.Println(len(end))
+		// Ant_Path(Room_Start, Room_End)
+		// for key, strr := range the_rooms {
+		// 	fmt.Printf("%s-%s ", key, strr)
+		// }
+		// fmt.Println("ok")
+		// fmt.Println(len(start))
+		// fmt.Println(len(end))
 		// fmt.Println(len(tunnels))
-		Find_Short_Path()
-		for i, path := range tunnels {
-			fmt.Println(i, path)
-		}
+		// Find_Short_Path()
+		// tunnel := Best_Path(Room_Start, Room_End)
+		// fmt.Println(tunnel)
+		Get_Best_Path(Room_Start, Room_End)
+		// MarkVisist()
+		Get_All_Path(Room_Start, Room_End)
+		fmt.Println(tunnels)
+
+		// for i, path := range tunnel {
+		// 	fmt.Println(i, path)
+		// }
 
 	}
 }

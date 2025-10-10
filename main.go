@@ -11,18 +11,50 @@ import (
 )
 
 var (
-	start      = []string{}
-	end        = []string{}
-	Room_Start = ""
-	Room_End   = ""
-	the_rooms  = make(map[string][]string)
-	RestOfAnt  = 0
-	tunnels    = [][][]string{}
-
+	start          = []string{}
+	end            = []string{}
+	Room_Start     = ""
+	Room_End       = ""
+	the_rooms      = make(map[string][]string)
+	RestOfAnt      = 0
+	tunnels        = [][][]string{}
+	number_of_ants = -1
 	// len_path = make(map[int]int)
 )
 
-func Get_Best_Path(start, end string) {
+func Short_Path() (int, int) {
+	indexi := 0
+	indexj := 0
+	lenth := 0
+	if len(tunnels[0][0]) > 0 {
+		lenth = len(tunnels[0][0])
+	}
+	for i, grpath := range tunnels {
+		for j, path := range grpath {
+			if len(path) < lenth {
+				lenth = len(path)
+				indexi = i
+				indexj = j
+			}
+		}
+	}
+	return indexi, indexj
+}
+
+func Enter_Ant() {
+	indexi, indexj := Short_Path()
+	fmt.Println(indexi, indexj)
+	fmt.Println(tunnels[indexi][indexj])
+	// for _, Group_Path := range tunnels {
+	// 	fmt.Println(Short_Path(Group_Path))
+	// 	// for _, path := range Group_Path {
+	// 	// 	for _, Room := range path {
+	// 	// 	}
+	// 	// }
+	// }
+}
+
+func Init_Path_Groups(start, end string) {
 	for _, nehbior := range the_rooms[start] {
 		Best_Path := [][]string{}
 		Best_Path = append(Best_Path, Bfs(nehbior, end, start, map[string]bool{start: true, nehbior: true}))
@@ -30,10 +62,32 @@ func Get_Best_Path(start, end string) {
 	}
 }
 
+func Bfs(start, end, start1 string, visit map[string]bool) []string {
+	quene := []string{start}
+	parent := make(map[string]string)
+	visit[start] = true
+	for len(quene) > 0 {
+		current := quene[0]
+		quene = quene[1:]
+
+		for _, neighbor := range the_rooms[current] {
+			if !visit[neighbor] {
+				visit[neighbor] = true
+				parent[neighbor] = current
+				quene = append(quene, neighbor)
+			}
+			if current == end {
+				return Complete_Path(parent, start, end)
+			}
+		}
+	}
+	return nil
+}
+
 func Get_All_Path(start, end string) {
 	for i, Group_Path := range tunnels {
-		visit := MarkVisist(Group_Path)
 		for _, nehbior := range the_rooms[start] {
+			visit := MarkVisist(Group_Path)
 			if !visit[nehbior] {
 				Paths := Bfs(nehbior, end, start, visit)
 				if len(Paths) > 0 {
@@ -41,11 +95,12 @@ func Get_All_Path(start, end string) {
 				}
 			}
 		}
+
 	}
 }
 
 func MarkVisist(Group_Path [][]string) map[string]bool {
-	visit := map[string]bool{Room_Start: true}
+	visit := map[string]bool{}
 	for _, paths := range Group_Path {
 		for i, Room := range paths {
 			if i != len(paths)-1 {
@@ -76,30 +131,6 @@ func MarkVisist(Group_Path [][]string) map[string]bool {
 // 	}
 
 // }
-
-func Bfs(start, end, start1 string, visit map[string]bool) []string {
-	quene := []string{start}
-	parent := make(map[string]string)
-
-	for len(quene) > 0 {
-
-		current := quene[0]
-
-		quene = quene[1:]
-
-		for _, neighbor := range the_rooms[current] {
-			if !visit[neighbor] {
-				visit[neighbor] = true
-				parent[neighbor] = current
-				quene = append(quene, neighbor)
-			}
-			if neighbor == end {
-				return Complete_Path(parent, start, end)
-			}
-		}
-	}
-	return nil
-}
 
 func Complete_Path(parent map[string]string, start, end string) []string {
 	path := []string{}
@@ -161,7 +192,6 @@ func main() {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
 
-		number_of_ants := -1
 		OnStart := false
 		OnEnd := false
 		for scanner.Scan() {
@@ -227,11 +257,14 @@ func main() {
 		// Find_Short_Path()
 		// tunnel := Best_Path(Room_Start, Room_End)
 		// fmt.Println(tunnel)
-		Get_Best_Path(Room_Start, Room_End)
+		Init_Path_Groups(Room_Start, Room_End)
 		// MarkVisist()
+		// fmt.Println(tunnels)
+
 		Get_All_Path(Room_Start, Room_End)
 		fmt.Println(tunnels)
-
+		Enter_Ant()
+		//10/10/2025 17:30
 		// for i, path := range tunnel {
 		// 	fmt.Println(i, path)
 		// }

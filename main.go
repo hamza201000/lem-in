@@ -22,47 +22,43 @@ var (
 	// len_path = make(map[int]int)
 )
 
-func Short_Path() (int, int) {
-	indexi := 0
-	indexj := 0
-	lenth := 0
-	if len(tunnels[0][0]) > 0 {
-		lenth = len(tunnels[0][0])
-	}
-	for i, grpath := range tunnels {
-		for j, path := range grpath {
-			if len(path) < lenth {
-				lenth = len(path)
-				indexi = i
-				indexj = j
-			}
-		}
-	}
-	return indexi, indexj
-}
+// func Short_Path() {
+// 	exists := make(map[string]bool)
+// 	for i, Group_Path := range tunnels {
+// 		for j, paths := range Group_Path {
+// 			for _, Room := range paths {
+// 				if exists[Room]{
+// 					Group_Path[i]=
+// 				}
+// 				exists[Room] = true
+// 			}
+// 		}
+// 	}
+// }
 
-func Enter_Ant() {
-	indexi, indexj := Short_Path()
-	fmt.Println(indexi, indexj)
-	fmt.Println(tunnels[indexi][indexj])
-	// for _, Group_Path := range tunnels {
-	// 	fmt.Println(Short_Path(Group_Path))
-	// 	// for _, path := range Group_Path {
-	// 	// 	for _, Room := range path {
-	// 	// 	}
-	// 	// }
-	// }
-}
+// func Enter_Ant() {
+// 	indexi, indexj := Short_Path()
+// 	fmt.Println(indexi, indexj)
+// 	fmt.Println(tunnels[indexi][indexj])
+// 	// for _, Group_Path := range tunnels {
+// 	// 	fmt.Println(Short_Path(Group_Path))
+// 	// 	// for _, path := range Group_Path {
+// 	// 	// 	for _, Room := range path {
+// 	// 	// 	}
+// 	// 	// }
+// 	// }
+// }
 
 func Init_Path_Groups(start, end string) {
 	for _, nehbior := range the_rooms[start] {
 		Best_Path := [][]string{}
-		Best_Path = append(Best_Path, Bfs(nehbior, end, start, map[string]bool{start: true, nehbior: true}))
+		Best_Path = append(Best_Path, Bfs(nehbior, end, map[string]bool{start: true, nehbior: true}))
 		tunnels = append(tunnels, Best_Path)
 	}
+	fmt.Println(tunnels)
 }
 
-func Bfs(start, end, start1 string, visit map[string]bool) []string {
+func Bfs(start, end string, visit map[string]bool) []string {
 	quene := []string{start}
 	parent := make(map[string]string)
 	visit[start] = true
@@ -86,16 +82,19 @@ func Bfs(start, end, start1 string, visit map[string]bool) []string {
 
 func Get_All_Path(start, end string) {
 	for i, Group_Path := range tunnels {
+		visit := MarkVisist(Group_Path)
+		fmt.Println("OK")
 		for _, nehbior := range the_rooms[start] {
-			visit := MarkVisist(Group_Path)
 			if !visit[nehbior] {
-				Paths := Bfs(nehbior, end, start, visit)
+				fmt.Println(nehbior)
+				Paths := Bfs(nehbior, end, visit)
 				if len(Paths) > 0 {
 					tunnels[i] = append(tunnels[i], Paths)
+					visit = MarkVisist(tunnels[i])
 				}
+
 			}
 		}
-
 	}
 }
 
@@ -140,7 +139,7 @@ func Complete_Path(parent map[string]string, start, end string) []string {
 		curnt = parent[curnt]
 	}
 	path = append(path, start)
-	path = append(path, Room_Start)
+	// path = append(path, Room_Start)
 	slices.Reverse(path)
 	return path
 }
@@ -263,8 +262,8 @@ func main() {
 
 		Get_All_Path(Room_Start, Room_End)
 		fmt.Println(tunnels)
-		Enter_Ant()
-		//10/10/2025 17:30
+		// Enter_Ant()
+		// 10/10/2025 17:30
 		// for i, path := range tunnel {
 		// 	fmt.Println(i, path)
 		// }

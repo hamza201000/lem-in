@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -48,6 +49,41 @@ var (
 // 	// 	// }
 // 	// }
 // }
+
+func Filters() {
+
+	for _, group := range tunnels {
+
+		sort.Slice(group, func(i, j int) bool {
+			return len(group[i]) < len(group[j])
+		})
+		Ant := number_of_ants
+		for Ant != 0 {
+			Ant--
+			group[0] = append(group[0], "L"+strconv.Itoa(number_of_ants-Ant))
+			if len(group) > 1 && len(group[0]) > len(group[1]) {
+				break
+			}
+		}
+
+		for Ant != 0 {
+			for i := range group {
+				if Ant == 0 {
+					break
+				}
+				if i < len(group)-1 && len(group[i]) > len(group[i+1]) {
+					Ant--
+					group[i+1] = append(group[i+1], "L"+strconv.Itoa(number_of_ants-Ant))
+				} else if i < len(group)-1 && len(group[i]) == len(group[i+1]) {
+					Ant--
+					group[i] = append(group[i], "L"+strconv.Itoa(number_of_ants-Ant))
+				}
+
+			}
+
+		}
+	}
+}
 
 func Init_Path_Groups(start, end string) {
 	for _, nehbior := range the_rooms[start] {
@@ -261,6 +297,8 @@ func main() {
 		// fmt.Println(tunnels)
 
 		Get_All_Path(Room_Start, Room_End)
+		fmt.Println(tunnels)
+		Filters()
 		fmt.Println(tunnels)
 		// Enter_Ant()
 		// 10/10/2025 17:30

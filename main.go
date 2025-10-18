@@ -12,51 +12,21 @@ import (
 )
 
 var (
-	start          = []string{}
-	end            = []string{}
-	Room_Start     = ""
-	Room_End       = ""
-	the_rooms      = make(map[string][]string)
-	RestOfAnt      = 0
-	tunnels        = [][][]string{}
+	start      = []string{}
+	end        = []string{}
+	Room_Start = ""
+	Room_End   = ""
+	the_rooms  = make(map[string][]string)
+	RestOfAnt  = 0
+
 	number_of_ants = -1
-	// len_path = make(map[int]int)
 )
 
-// func Short_Path() {
-// 	exists := make(map[string]bool)
-// 	for i, Group_Path := range tunnels {
-// 		for j, paths := range Group_Path {
-// 			for _, Room := range paths {
-// 				if exists[Room]{
-// 					Group_Path[i]=
-// 				}
-// 				exists[Room] = true
-// 			}
-// 		}
-// 	}
-// }
+func Find_Best_Group(AllGroup [][][]string) ([][][]string, int, int) {
+	turn := 0
+	IndexOfBestGroup := -1
+	for i, group := range AllGroup {
 
-// func Enter_Ant() {
-// 	indexi, indexj := Short_Path()
-// 	fmt.Println(indexi, indexj)
-// 	fmt.Println(tunnels[indexi][indexj])
-// 	// for _, Group_Path := range tunnels {
-// 	// 	fmt.Println(Short_Path(Group_Path))
-// 	// 	// for _, path := range Group_Path {
-// 	// 	// 	for _, Room := range path {
-// 	// 	// 	}
-// 	// 	// }
-// 	// }
-// }
-
-func Filters() {
-
-	for _, group := range tunnels {
-
-		sort.Slice(group, func(i, j int) bool {
-			return len(group[i]) < len(group[j])
-		})
 		Ant := number_of_ants
 		for Ant != 0 {
 			Ant--
@@ -80,30 +50,54 @@ func Filters() {
 				}
 
 			}
+		}
+		if turn == 0 || len(group[0]) < turn {
+			turn = len(group[0])
 
+			IndexOfBestGroup = i
 		}
 	}
+	return AllGroup, IndexOfBestGroup, turn - 1
 }
 
-func Init_Path_Groups(start, end string) {
+func Move_Ant() {
+	Base_Tunnels := Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End))
+
+	Tunnels, Indx_Grp, Turn := Find_Best_Group(Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End)))
+	fmt.Println(Base_Tunnels[Indx_Grp])
+	fmt.Println(Tunnels[Indx_Grp])
+
+
+		if Turn == 0 {
+			Turn=0
+		}
+
+		fmt.Print(Tunnels[Indx_Grp][0][len(Base_Tunnels[Indx_Grp][0])],"-",Base_Tunnels[Indx_Grp][0][0])
+
+	
+}
+
+func Init_Path_Groups(start, end string) [][][]string {
+	tunnels := [][][]string{}
 	for _, nehbior := range the_rooms[start] {
 		Best_Path := [][]string{}
 		Best_Path = append(Best_Path, Bfs(nehbior, end, map[string]bool{start: true, nehbior: true}))
 		tunnels = append(tunnels, Best_Path)
 	}
-	fmt.Println(tunnels)
+	return tunnels
 }
 
 func Bfs(start, end string, visit map[string]bool) []string {
 	quene := []string{start}
 	parent := make(map[string]string)
 	visit[start] = true
+	visit[Room_Start] = true
 	for len(quene) > 0 {
 		current := quene[0]
 		quene = quene[1:]
 
 		for _, neighbor := range the_rooms[current] {
-			if !visit[neighbor] {
+			if !visit[neighbor] || neighbor == end {
 				visit[neighbor] = true
 				parent[neighbor] = current
 				quene = append(quene, neighbor)
@@ -116,13 +110,27 @@ func Bfs(start, end string, visit map[string]bool) []string {
 	return nil
 }
 
-func Get_All_Path(start, end string) {
+func Complete_Path(parent map[string]string, start, end string) []string {
+	path := []string{}
+	curnt := end
+	for curnt != start {
+
+		path = append(path, curnt)
+
+		curnt = parent[curnt]
+	}
+	path = append(path, start)
+	// path = append(path, Room_Start)
+	slices.Reverse(path)
+	return path
+}
+
+func Get_All_Path(start, end string, tunnels [][][]string) [][][]string {
 	for i, Group_Path := range tunnels {
+
 		visit := MarkVisist(Group_Path)
-		fmt.Println("OK")
 		for _, nehbior := range the_rooms[start] {
 			if !visit[nehbior] {
-				fmt.Println(nehbior)
 				Paths := Bfs(nehbior, end, visit)
 				if len(Paths) > 0 {
 					tunnels[i] = append(tunnels[i], Paths)
@@ -131,53 +139,22 @@ func Get_All_Path(start, end string) {
 
 			}
 		}
+		sort.Slice(Group_Path, func(i, j int) bool {
+			return len(Group_Path[i]) < len(Group_Path[j])
+		})
 	}
+
+	return tunnels
 }
 
 func MarkVisist(Group_Path [][]string) map[string]bool {
 	visit := map[string]bool{}
 	for _, paths := range Group_Path {
-		for i, Room := range paths {
-			if i != len(paths)-1 {
-				visit[Room] = true
-			}
+		for _, Room := range paths {
+			visit[Room] = true
 		}
 	}
 	return visit
-}
-
-// func Find_Short_Path() {
-// 	for i := 0; i < len(tunnels); i++ {
-// 		for j := 0; j < len(tunnels); j++ {
-// 			if len(tunnels[i]) < len(tunnels[j]) {
-// 				tunnels[i], tunnels[j] = tunnels[j], tunnels[i]
-// 			}
-// 		}
-// 	}
-// }
-
-// func Enter_Ant(){
-
-// 	for _,path:=range tunnels{
-// 		for i:=0;i<len(path);i++{
-
-// 		}
-
-// 	}
-
-// }
-
-func Complete_Path(parent map[string]string, start, end string) []string {
-	path := []string{}
-	curnt := end
-	for curnt != start {
-		path = append(path, curnt)
-		curnt = parent[curnt]
-	}
-	path = append(path, start)
-	// path = append(path, Room_Start)
-	slices.Reverse(path)
-	return path
 }
 
 func Split_Char(str []byte, char byte) int {
@@ -219,51 +196,10 @@ func main() {
 			fmt.Println("you have to write command like this : go run . exfile.txt")
 			return
 		}
-		file, err := os.Open(args[0])
-		if err != nil {
-			fmt.Println("Error: ", err)
-			return
-		}
-		defer file.Close()
-		scanner := bufio.NewScanner(file)
-
-		OnStart := false
-		OnEnd := false
-		for scanner.Scan() {
-			text := scanner.Text()
-			if number_of_ants == -1 {
-				number_of_ants, err = strconv.Atoi(text)
-				if err != nil {
-					fmt.Println("Error: ", err)
-					return
-				}
-				// fmt.Println(text)
-			} else if text == "##start" {
-				start = append(start, text)
-				OnStart = true
-			} else if text == "##end" {
-				end = append(end, text)
-				OnEnd = true
-				OnStart = false
-			} else if OnStart {
-				start = append(start, text)
-			} else if OnEnd {
-				end = append(end, text)
-			}
-		}
-		if err := scanner.Err(); err != nil {
-			fmt.Println("Error reading file:", err)
-			return
-		}
-		// for key, strr := range the_rooms {
-		// 	fmt.Printf("%s-%s ", key, strr)
-		// }
-		// Ant_Path("1", "0")
-		// fmt.Println()
+		parseFile(args[0])
 		i := 0
-		// fmt.Println("endendendendendendendendendendendendendendendendendendendendendend")
+		fmt.Println(end)
 		for _, ValueEnd := range end {
-			// fmt.Println(ValueEnd)
 			ValBytes := []byte(ValueEnd)
 			i := bytes.IndexByte(ValBytes, '-')
 			if i != -1 {
@@ -274,37 +210,55 @@ func main() {
 		Room_Start = start[1][:i]
 		i = Split_Char([]byte(end[1]), ' ')
 		Room_End = end[1][:i]
-		// Room_Start = "4020"
 
-		// Room_End = "19180"
-		// fmt.Println(Room_Start)
-		// fmt.Println(Room_End)
-		// fmt.Println(Room_Start, ",", Room_End)
+		fmt.Println("          OK")
 
-		// Ant_Path(Room_Start, Room_End)
-		// for key, strr := range the_rooms {
-		// 	fmt.Printf("%s-%s ", key, strr)
-		// }
-		// fmt.Println("ok")
-		// fmt.Println(len(start))
-		// fmt.Println(len(end))
-		// fmt.Println(len(tunnels))
-		// Find_Short_Path()
-		// tunnel := Best_Path(Room_Start, Room_End)
-		// fmt.Println(tunnel)
-		Init_Path_Groups(Room_Start, Room_End)
-		// MarkVisist()
-		// fmt.Println(tunnels)
+		fmt.Println("          OK")
+		// fmt.Println(Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End)))
 
-		Get_All_Path(Room_Start, Room_End)
-		fmt.Println(tunnels)
-		Filters()
-		fmt.Println(tunnels)
-		// Enter_Ant()
-		// 10/10/2025 17:30
-		// for i, path := range tunnel {
-		// 	fmt.Println(i, path)
-		// }
+		// // fmt.Println(start)
+		// // fmt.Println(end)
+		// fmt.Println(Find_Best_Group(Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End))))
+		// fmt.Println(Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End)))
+		Move_Ant()
 
+	}
+}
+
+func parseFile(filename string) {
+	file, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+
+	OnStart := false
+	OnEnd := false
+	for scanner.Scan() {
+		text := scanner.Text()
+		if number_of_ants == -1 {
+			number_of_ants, err = strconv.Atoi(text)
+			if err != nil {
+				fmt.Println("Error: ", err)
+				return
+			}
+		} else if text == "##start" {
+			start = append(start, text)
+			OnStart = true
+		} else if text == "##end" {
+			end = append(end, text)
+			OnEnd = true
+			OnStart = false
+		} else if OnStart {
+			start = append(start, text)
+		} else if OnEnd {
+			end = append(end, text)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println("Error reading file:", err)
+		return
 	}
 }

@@ -22,7 +22,7 @@ var (
 	number_of_ants = -1
 )
 
-func Find_Best_Group(AllGroup [][][]string) ([][][]string, int, int) {
+func Find_Best_Group(AllGroup [][][]string) ([][]string, int, int) {
 	turn := 0
 	IndexOfBestGroup := -1
 	for i, group := range AllGroup {
@@ -57,24 +57,64 @@ func Find_Best_Group(AllGroup [][][]string) ([][][]string, int, int) {
 			IndexOfBestGroup = i
 		}
 	}
-	return AllGroup, IndexOfBestGroup, turn - 1
+	return AllGroup[IndexOfBestGroup], IndexOfBestGroup, turn - 1
 }
 
 func Move_Ant() {
-	Base_Tunnels := Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End))
-
 	Tunnels, Indx_Grp, Turn := Find_Best_Group(Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End)))
-	fmt.Println(Base_Tunnels[Indx_Grp])
-	fmt.Println(Tunnels[Indx_Grp])
+	Base_Tunnels := Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End))
+	Bs_Tunnel := Base_Tunnels[Indx_Grp]
+	fmt.Println(Bs_Tunnel)
+	// fmt.Println(Tunnels)
 
+	for i := range Tunnels {
+		Tunnels[i] = Tunnels[i][len(Bs_Tunnel[i]):]
+	}
+	fmt.Println(Tunnels)
+	if Turn == 0 {
+		Turn = 0
+	}
 
-		if Turn == 0 {
-			Turn=0
+	// Ant_key := make(map[string][]string)
+	// for i, path := range Tunnels {
+	// 	for _, room := range path {
+	// 		for j, path2 := range Bs_Tunnel {
+	// 			if i == j {
+	// 				Ant_key[room] = path2
+	// 			}
+	// 		}
+	// 	}
+	// }
+	Turn2 := Turn
+
+	Ant_Position := make(map[string]int)
+	for _, path := range Tunnels {
+		for _, room := range path {
+			Ant_Position[room] = 0
 		}
+	}
+	fmt.Println(Ant_Position)
+	for Turn != 0 {
+		i := 0
+		for i < len(Tunnels) {
+			j := 0
+			for j < len(Tunnels[i]) && j <= Turn2-Turn {
+				if Ant_Position[Tunnels[i][j]] < len(Bs_Tunnel[i]) {
+					fmt.Print(Tunnels[i][j] + "-" + Bs_Tunnel[i][Ant_Position[Tunnels[i][j]]] + " ")
+					Ant_Position[Tunnels[i][j]] = Ant_Position[Tunnels[i][j]] + 1
+				}
+				j++
 
-		fmt.Print(Tunnels[Indx_Grp][0][len(Base_Tunnels[Indx_Grp][0])],"-",Base_Tunnels[Indx_Grp][0][0])
+			}
+			i++
 
-	
+		}
+		Turn--
+		fmt.Println()
+
+	}
+	// fmt.Println(Ant_key)
+	// fmt.Print(Tunnels[Indx_Grp][0][len(Base_Tunnels[Indx_Grp][0])],"-",Base_Tunnels[Indx_Grp][0][0])
 }
 
 func Init_Path_Groups(start, end string) [][][]string {

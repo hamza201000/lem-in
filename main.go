@@ -65,7 +65,7 @@ func Move_Ant() {
 	Base_Tunnels := Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End))
 	Bs_Tunnel := Base_Tunnels[Indx_Grp]
 	fmt.Println(Bs_Tunnel)
-	// fmt.Println(Tunnels)
+	fmt.Println(Tunnels)
 
 	for i := range Tunnels {
 		Tunnels[i] = Tunnels[i][len(Bs_Tunnel[i]):]
@@ -94,8 +94,9 @@ func Move_Ant() {
 		}
 	}
 	fmt.Println(Ant_Position)
+	i := 0
 	for Turn != 0 {
-		i := 0
+		i = 0
 		for i < len(Tunnels) {
 			j := 0
 			for j < len(Tunnels[i]) && j <= Turn2-Turn {
@@ -104,11 +105,11 @@ func Move_Ant() {
 					Ant_Position[Tunnels[i][j]] = Ant_Position[Tunnels[i][j]] + 1
 				}
 				j++
-
 			}
 			i++
 
 		}
+
 		Turn--
 		fmt.Println()
 
@@ -179,11 +180,17 @@ func Get_All_Path(start, end string, tunnels [][][]string) [][][]string {
 
 			}
 		}
+		
+	}
+	for _, Group_Path := range tunnels {
+
+		
+	fmt.Println(Group_Path)
 		sort.Slice(Group_Path, func(i, j int) bool {
 			return len(Group_Path[i]) < len(Group_Path[j])
 		})
+		fmt.Println(Group_Path)
 	}
-
 	return tunnels
 }
 

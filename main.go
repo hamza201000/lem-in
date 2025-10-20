@@ -170,16 +170,16 @@ func Bfs(start, end string, visit map[string]bool) []string {
 	for len(quene) > 0 {
 		current := quene[0]
 		quene = quene[1:]
-
+		if current == end {
+				return Complete_Path(parent, start, end)
+			}
 		for _, neighbor := range the_rooms[current] {
 			if !visit[neighbor] || neighbor == end {
 				visit[neighbor] = true
 				parent[neighbor] = current
 				quene = append(quene, neighbor)
 			}
-			if current == end {
-				return Complete_Path(parent, start, end)
-			}
+			
 
 		}
 	}

@@ -35,18 +35,21 @@ func Find_Best_Group(AllGroup [][][]string) ([][]string, int, int) {
 				break
 			}
 		}
+		fmt.Println("OKKKKKKKKKKKKKKKKKKKKKK")
+		fmt.Println(group)
 
 		for Ant != 0 {
-			for i := range group {
+			for j := range group {
 				if Ant == 0 {
 					break
 				}
-				if i < len(group)-1 && len(group[i]) > len(group[i+1]) {
+				if j < len(group)-1 && len(group[j]) <= len(group[j+1]) {
 					Ant--
-					group[i+1] = append(group[i+1], "L"+strconv.Itoa(number_of_ants-Ant))
-				} else if i < len(group)-1 && len(group[i]) == len(group[i+1]) {
+					group[j] = append(group[j], "L"+strconv.Itoa(number_of_ants-Ant))
+				}
+				if len(group)>1&&j==len(group)-1&&len(group[j]) < len(group[j-1]){
 					Ant--
-					group[i] = append(group[i], "L"+strconv.Itoa(number_of_ants-Ant))
+					group[j] = append(group[j], "L"+strconv.Itoa(number_of_ants-Ant))
 				}
 
 			}
@@ -60,15 +63,15 @@ func Find_Best_Group(AllGroup [][][]string) ([][]string, int, int) {
 	return AllGroup[IndexOfBestGroup], IndexOfBestGroup, turn - 1
 }
 
-func Move_Ant() {
-	Tunnels, Indx_Grp, Turn := Find_Best_Group(Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End)))
-	Base_Tunnels := Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End))
-	Bs_Tunnel := Base_Tunnels[Indx_Grp]
-
+func Move_Ant(Tunnels, Bs_Tunnel [][]string, Turn int) {
+	// fmt.Println("ok")
+	fmt.Println(Bs_Tunnel)
+	fmt.Println(Tunnels)
 	for i := range Tunnels {
 		Tunnels[i] = Tunnels[i][len(Bs_Tunnel[i]):]
 	}
 
+	// fmt.Println(Tunnels)
 	// Ant_key := make(map[string][]string)
 	// for i, path := range Tunnels {
 	// 	for _, room := range path {
@@ -90,6 +93,7 @@ func Move_Ant() {
 
 	i := 0
 	Terminal := false
+	cou := 0
 	for !Terminal {
 		i = 0
 		for i < len(Tunnels) {
@@ -110,9 +114,11 @@ func Move_Ant() {
 			i++
 
 		}
-
+		cou++
 		Turn--
+
 		fmt.Println()
+		fmt.Println("oooooooooooooooooooooooooo", cou)
 
 	}
 	// fmt.Println(Ant_key)
@@ -120,25 +126,19 @@ func Move_Ant() {
 }
 
 func Init_Path_Groups(start, end string) [][][]string {
-	tunnels := [][][]string{}
+	InitPath := [][][]string{}
 	for _, nehbior := range the_rooms[start] {
 
 		Best_Path := [][]string{}
-		Best_Path = append(Best_Path, BfsFirstEnd(nehbior, end, map[string]bool{}))
-		
-		tunnels = append(tunnels, Best_Path)
-	}
-	for _, nehbior := range the_rooms[start] {
-
-		Best_Path := [][]string{}
-		
 		Best_Path = append(Best_Path, Bfs(nehbior, end, map[string]bool{}))
-		tunnels = append(tunnels, Best_Path)
+
+		InitPath = append(InitPath, Best_Path)
 	}
-	return tunnels
+	
+	return InitPath
 }
 
-func BfsFirstEnd(start, end string, visit map[string]bool) []string {
+func Bfs(start, end string, visit map[string]bool) []string {
 	quene := []string{start}
 	parent := make(map[string]string)
 	visit[start] = true
@@ -162,29 +162,7 @@ func BfsFirstEnd(start, end string, visit map[string]bool) []string {
 	return nil
 }
 
-func Bfs(start, end string, visit map[string]bool) []string {
-	quene := []string{start}
-	parent := make(map[string]string)
-	visit[start] = true
-	visit[Room_Start] = true
-	for len(quene) > 0 {
-		current := quene[0]
-		quene = quene[1:]
-		if current == end {
-				return Complete_Path(parent, start, end)
-			}
-		for _, neighbor := range the_rooms[current] {
-			if !visit[neighbor] || neighbor == end {
-				visit[neighbor] = true
-				parent[neighbor] = current
-				quene = append(quene, neighbor)
-			}
-			
 
-		}
-	}
-	return nil
-}
 
 func Complete_Path(parent map[string]string, start, end string) []string {
 	path := []string{}
@@ -203,8 +181,7 @@ func Complete_Path(parent map[string]string, start, end string) []string {
 
 func Get_All_Path(start, end string, tunnels [][][]string) [][][]string {
 	for i, Group_Path := range tunnels {
-		fmt.Println("ok")
-		fmt.Println(Group_Path)
+
 		visit := MarkVisist(Group_Path)
 		for _, nehbior := range the_rooms[start] {
 			if !visit[nehbior] {
@@ -223,7 +200,7 @@ func Get_All_Path(start, end string, tunnels [][][]string) [][][]string {
 			return len(Group_Path[i]) < len(Group_Path[j])
 		})
 	}
-	fmt.Println(tunnels)
+
 	return tunnels
 }
 
@@ -297,9 +274,25 @@ func main() {
 		// // fmt.Println(end)
 		// fmt.Println(Find_Best_Group(Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End))))
 		// fmt.Println(Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End)))
-		Move_Ant()
+		Base_Tunnels := Get_All_Path(Room_Start, Room_End, Init_Path_Groups(Room_Start, Room_End))
+
+		Tunnels, Indx_Grp, Turn := Find_Best_Group(CopySlice(Base_Tunnels))
+
+		Bs_Tunnel := Base_Tunnels[Indx_Grp]
+
+		Move_Ant(Tunnels, Bs_Tunnel, Turn)
 
 	}
+}
+
+func CopySlice(group [][][]string) [][][]string {
+	copyGroup := make([][][]string, len(group))
+	for i := range group {
+		copyGroup[i] = make([][]string, len(group[i]))
+		copy(copyGroup[i], group[i])
+	}
+
+	return copyGroup
 }
 
 func parseFile(filename string) {

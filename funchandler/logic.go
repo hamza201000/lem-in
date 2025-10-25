@@ -1,18 +1,27 @@
 package funchandler
 
-import "sort"
+import (
+	"sort"
+)
 
 func Init_Path_Groups(start, end string, the_rooms map[string][]string) [][][]string {
 	InitPath := [][][]string{}
 	for _, nehbior := range the_rooms[start] {
 		Best_Path := [][]string{}
-		Best_Path = append(Best_Path, BfsFirstEnd(start, nehbior, end, the_rooms, map[string]bool{}))
-		InitPath = append(InitPath, Best_Path)
+		BufSlc := BfsFirstEnd(start, nehbior, end, the_rooms, map[string]bool{})
+		if len(BufSlc) > 0 {
+			Best_Path = append(Best_Path, BufSlc)
+			InitPath = append(InitPath, Best_Path)
+		}
+
 	}
 	for _, nehbior := range the_rooms[start] {
 		Best_Path := [][]string{}
-		Best_Path = append(Best_Path, Bfs(start, nehbior, end, the_rooms, map[string]bool{}))
-		InitPath = append(InitPath, Best_Path)
+		BufSlc := Bfs(start, nehbior, end, the_rooms, map[string]bool{})
+		if len(BufSlc) > 0 {
+			Best_Path = append(Best_Path, BufSlc)
+			InitPath = append(InitPath, Best_Path)
+		}
 	}
 	return InitPath
 }
@@ -22,6 +31,7 @@ func BfsFirstEnd(start, startneibor, end string, the_rooms map[string][]string, 
 	parent := make(map[string]string)
 	visit[startneibor] = true
 	visit[start] = true
+
 	for len(quene) > 0 {
 		current := quene[0]
 		quene = quene[1:]
@@ -45,6 +55,7 @@ func Bfs(start, startneibor, end string, the_rooms map[string][]string, visit ma
 	parent := make(map[string]string)
 	visit[startneibor] = true
 	visit[start] = true
+
 	for len(quene) > 0 {
 		current := quene[0]
 		quene = quene[1:]
@@ -101,10 +112,8 @@ func Get_All_Path(start, end string, the_rooms map[string][]string, tunnels [][]
 func MarkVisist(Group_Path [][]string) map[string]bool {
 	visit := map[string]bool{}
 	for _, paths := range Group_Path {
-		for i, Room := range paths {
-			if i != len(paths)-1 {
-				visit[Room] = true
-			}
+		for _, Room := range paths {
+			visit[Room] = true
 		}
 	}
 	return visit

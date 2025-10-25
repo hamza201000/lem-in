@@ -26,7 +26,7 @@ type Graph struct {
 
 // ParseFileToGraph parses the given filename into a Graph.
 // It returns a detailed error when the input violates any expected rule.
-func ParseFileToGraph(filename string) (*Graph, []Room, error) {
+func ParseFileToGraph(filename string) (*Graph, [][]string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, nil, fmt.Errorf("ERROR: cannot open file: %v", err)
@@ -34,7 +34,9 @@ func ParseFileToGraph(filename string) (*Graph, []Room, error) {
 	defer f.Close()
 
 	graph := &Graph{Rooms: make(map[string]*Room), The_rooms: make(map[string][]string)}
-	AllRoom := []Room{}
+	AllRoom := [][]string{}
+	StartRoom := []string{}
+	EndRoom := []string{}
 	scanner := bufio.NewScanner(f)
 	lineNumber := 0
 
@@ -67,11 +69,17 @@ func ParseFileToGraph(filename string) (*Graph, []Room, error) {
 					return nil, nil, fmt.Errorf("ERROR: invalid data format, duplicate ##start (line %d)", lineNumber)
 				}
 				startNext = true
+				StartRoom = append(StartRoom, raw)
 				continue
 			} else if line == "##end" {
 				if endFound || endNext {
 					return nil, nil, fmt.Errorf("ERROR: invalid data format, duplicate ##end (line %d)", lineNumber)
 				}
+				if len(StartRoom) > 0 {
+					AllRoom = append(AllRoom, StartRoom)
+					StartRoom = []string{}
+				}
+				EndRoom = append(EndRoom, raw)
 				endNext = true
 				continue
 			} else {
@@ -120,8 +128,9 @@ func ParseFileToGraph(filename string) (*Graph, []Room, error) {
 			coords[coordKey] = name
 
 			room := &Room{Name: name, X: x, Y: y}
-			AllRoom = append(AllRoom, *room)
+
 			if startNext {
+				
 				room.IsStart = true
 				startLine = lineNumber
 				graph.Start = room
@@ -143,7 +152,7 @@ func ParseFileToGraph(filename string) (*Graph, []Room, error) {
 			}
 
 			graph.Rooms[name] = room
-
+			StartRoom = append(StartRoom, raw)
 			continue
 		}
 
@@ -165,7 +174,7 @@ func ParseFileToGraph(filename string) (*Graph, []Room, error) {
 					return nil, nil, fmt.Errorf("ERROR: duplicate tunnel between %s and %s (line %d)", a, b, lineNumber)
 				}
 			}
-
+			EndRoom=append(EndRoom, raw)
 			// append normally
 			if graph.The_rooms[string(roomA.Name)] == nil {
 				neighbr := []string{string(roomB.Name)}
@@ -184,6 +193,9 @@ func ParseFileToGraph(filename string) (*Graph, []Room, error) {
 		}
 
 		return nil, nil, fmt.Errorf("ERROR: invalid data format, invalid line: %s (line %d)", line, lineNumber)
+	}
+	if len(EndRoom) > 0 {
+		AllRoom = append(AllRoom, EndRoom)
 	}
 
 	if err := scanner.Err(); err != nil {
